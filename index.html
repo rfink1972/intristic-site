@@ -1,1 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Intristic.net</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    :root {
+      --bg: #040810;
+      --surface: #080f1e;
+      --cyan: #00e5ff;
+      --blue: #0a6fff;
+      --dim: #1a2a40;
+      --text: #c8dff5;
+      --muted: #4a6480;
+      --glow: 0 0 30px rgba(0, 229, 255, 0.25), 0 0 60px rgba(0, 229, 255, 0.1);
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Rajdhani', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Animated grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      animation: gridShift 20s linear infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 10%, rgba(10,111,255,0.12) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    @keyframes gridShift {
+      0%   { background-position: 0 0, 0 0; }
+      100% { background-position: 60px 60px, 60px 60px; }
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.4rem 3rem;
+      border-bottom: 1px solid rgba(0,229,255,0.08);
+      backdrop-filter: blur(12px);
+      background: rgba(4,8,16,0.6);
+    }
+
+    .nav-wordmark {
+      font-family: 'Syncopate', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.25em;
+      color: var(--cyan);
+      text-transform: uppercase;
+      opacity: 0;
+      animation: fadeIn 1s ease 0.3s forwards;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+      opacity: 0;
+      animation: fadeIn 1s ease 0.5s forwards;
+    }
+
+    .nav-links a {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--cyan); }
+
+    /* HERO */
+    .hero {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 6rem 2rem 4rem;
+    }
+
+    /* LOGO MARK */
+    .logo-wrap {
+      position: relative;
+      margin-bottom: 2.5rem;
+      opacity: 0;
+      animation: riseIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+    }
+
+    .logo-svg {
+      width: 160px;
+      height: 160px;
+      filter: drop-shadow(0 0 20px rgba(0,229,255,0.5)) drop-shadow(0 0 50px rgba(0,229,255,0.2));
+    }
+
+    .logo-ring {
+      animation: spinSlow 18s linear infinite;
+      transform-origin: center;
+    }
+
+    .logo-pulse {
+      animation: pulse 3s ease-in-out infinite;
+    }
+
+    @keyframes spinSlow {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50%       { opacity: 1; }
+    }
+
+    /* HEADLINE */
+    .headline {
+      font-family: 'Syncopate', sans-serif;
+      font-size: clamp(2.8rem, 8vw, 6.5rem);
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      color: #fff;
+      opacity: 0;
+      animation: riseIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.45s forwards;
+    }
+
+    .headline span {
+      color: var(--cyan);
+      position: relative;
+    }
+
+    .headline span::after {
+      content: '';
+      position: absolute;
+      bottom: -4px; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--cyan), var(--blue));
+      animation: scanLine 2.5s ease-in-out 1.8s both;
+      transform-origin: left;
+      transform: scaleX(0);
+    }
+
+    @keyframes scanLine {
+      to { transform: scaleX(1); }
+    }
+
+    .tagline {
+      margin-top: 1.6rem;
+      font-size: clamp(0.95rem, 2vw, 1.2rem);
+      font-weight: 300;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--muted);
+      opacity: 0;
+      animation: fadeIn 1s ease 0.9s forwards;
+    }
+
+    .tagline em {
+      color: var(--text);
+      font-style: normal;
+    }
+
+    /* CTA */
+    .cta-row {
+      margin-top: 3rem;
+      display: flex;
+      gap: 1.2rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      opacity: 0;
+      animation: fadeIn 1s ease 1.2s forwards;
+    }
+
+    .btn {
+      font-family: 'Syncopate', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 0.9rem 2.2rem;
+      border-radius: 2px;
+      transition: all 0.25s;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--cyan);
+      color: #040810;
+      border: none;
+      font-weight: 700;
+      box-shadow: 0 0 25px rgba(0,229,255,0.35);
+    }
+    .btn-primary:hover {
+      background: #fff;
+      box-shadow: 0 0 40px rgba(0,229,255,0.6);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--cyan);
+      border: 1px solid rgba(0,229,255,0.35);
+    }
+    .btn-ghost:hover {
+      border-color: var(--cyan);
+      background: rgba(0,229,255,0.07);
+    }
+
+    /* STATS BAR */
+    .stats {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: center;
+      gap: 0;
+      padding: 0 2rem 5rem;
+      opacity: 0;
+      animation: fadeIn 1s ease 1.5s forwards;
+    }
+
+    .stat {
+      padding: 1.5rem 3.5rem;
+      border: 1px solid var(--dim);
+      position: relative;
+      text-align: center;
+    }
+    .stat:not(:last-child) { border-right: none; }
+
+    .stat::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+      opacity: 0.4;
+    }
+
+    .stat-value {
+      font-family: 'Syncopate', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--cyan);
+      display: block;
+    }
+
+    .stat-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 0.3rem;
+      display: block;
+    }
+
+    /* SECTION */
+    .section {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 5rem 2rem;
+    }
+
+    .section-label {
+      font-family: 'Syncopate', sans-serif;
+      font-size: 0.6rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+    .section-label::before {
+      content: '';
+      display: block;
+      width: 24px;
+      height: 1px;
+      background: var(--cyan);
+    }
+
+    .section-title {
+      font-family: 'Syncopate', sans-serif;
+      font-size: clamp(1.5rem, 4vw, 2.8rem);
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.2;
+      margin-bottom: 1.5rem;
+    }
+
+    /* CARD GRID */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1px;
+      margin-top: 3rem;
+      border: 1px solid var(--dim);
+    }
+
+    .card {
+      padding: 2rem;
+      background: var(--surface);
+      border: none;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.3s;
+    }
+    .card:hover { background: #0c1525; }
+
+    .card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 2px;
+      height: 0;
+      background: var(--cyan);
+      transition: height 0.3s;
+    }
+    .card:hover::after { height: 100%; }
+
+    .card-icon {
+      width: 36px;
+      height: 36px;
+      margin-bottom: 1.2rem;
+      color: var(--cyan);
+    }
+
+    .card h3 {
+      font-family: 'Syncopate', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #fff;
+      margin-bottom: 0.8rem;
+    }
+
+    .card p {
+      font-size: 0.95rem;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    /* FOOTER */
+    footer {
+      position: relative;
+      z-index: 1;
+      border-top: 1px solid var(--dim);
+      padding: 2rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    footer p {
+      font-size: 0.8rem;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+
+    footer span {
+      font-family: 'Syncopate', sans-serif;
+      font-size: 0.6rem;
+      color: var(--cyan);
+      letter-spacing: 0.2em;
+    }
+
+    /* ANIMATIONS */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    @keyframes riseIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* SCAN LINE EFFECT */
+    .scanline {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(0,229,255,0.15), transparent);
+      animation: scanDown 6s linear infinite;
+      z-index: 200;
+      pointer-events: none;
+    }
+
+    @keyframes scanDown {
+      from { top: -2px; }
+      to   { top: 100vh; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="scanline"></div>
+
+<nav>
+  <div class="nav-wordmark">Intristic.net</div>
+  <ul class="nav-links">
+    <li><a href="#">About</a></li>
+    <li><a href="#">Work</a></li>
+    <li><a href="#">Contact</a></li>
+  </ul>
+</nav>
+
+<section class="hero">
+
+  <!-- LOGO MARK -->
+  <div class="logo-wrap">
+    <svg class="logo-svg" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Outer rotating ring with dashes -->
+      <g class="logo-ring">
+        <circle cx="80" cy="80" r="72" stroke="#00e5ff" stroke-width="1" stroke-dasharray="4 8" opacity="0.5"/>
+      </g>
+      <!-- Mid hex ring -->
+      <polygon points="80,16 134,48 134,112 80,144 26,112 26,48"
+               stroke="#00e5ff" stroke-width="1.5" fill="none" opacity="0.2"/>
+      <!-- Core hex -->
+      <polygon points="80,36 116,57 116,103 80,124 44,103 44,57"
+               stroke="#00e5ff" stroke-width="1" fill="rgba(0,229,255,0.04)" opacity="0.8"/>
+      <!-- Glow center -->
+      <circle cx="80" cy="80" r="22" fill="rgba(0,229,255,0.08)" class="logo-pulse"/>
+      <circle cx="80" cy="80" r="12" fill="rgba(0,229,255,0.15)"/>
+      <!-- I letterform — stylized angular -->
+      <rect x="74" y="52" width="12" height="4" fill="#00e5ff"/>
+      <rect x="77.5" y="56" width="5" height="32" fill="#00e5ff"/>
+      <rect x="74" y="88" width="12" height="4" fill="#00e5ff"/>
+      <!-- Corner accent ticks -->
+      <line x1="26" y1="48" x2="38" y2="48" stroke="#00e5ff" stroke-width="2" opacity="0.6"/>
+      <line x1="26" y1="48" x2="26" y2="62" stroke="#00e5ff" stroke-width="2" opacity="0.6"/>
+      <line x1="134" y1="48" x2="122" y2="48" stroke="#00e5ff" stroke-width="2" opacity="0.6"/>
+      <line x1="134" y1="48" x2="134" y2="62" stroke="#00e5ff" stroke-width="2" opacity="0.6"/>
+      <line x1="26" y1="112" x2="38" y2="112" stroke="#00e5ff" stroke-width="2" opacity="0.6"/>
+      <line x1="26" y1="112" x2="26" y2="98" stroke="#00e5ff" stroke-width="2" opacity="0.6"/>
+      <line x1="134" y1="112" x2="122" y2="112" stroke="#00e5ff" stroke-width="2" opacity="0.6"/>
+      <line x1="134" y1="112" x2="134" y2="98" stroke="#00e5ff" stroke-width="2" opacity="0.6"/>
+    </svg>
+  </div>
+
+  <h1 class="headline">INTRI<span>STIC</span></h1>
+  <p class="tagline">Something <em>intrinsic</em> is coming &nbsp;·&nbsp; Built from the inside out</p>
+
+  <div class="cta-row">
+    <a href="#" class="btn btn-primary">Get Started</a>
+    <a href="#" class="btn btn-ghost">Learn More</a>
+  </div>
+
+</section>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat">
+    <span class="stat-value">01</span>
+    <span class="stat-label">Domain Secured</span>
+  </div>
+  <div class="stat">
+    <span class="stat-value">∞</span>
+    <span class="stat-label">Possibilities</span>
+  </div>
+  <div class="stat">
+    <span class="stat-value">v1.0</span>
+    <span class="stat-label">Launch Ready</span>
+  </div>
+</div>
+
+<!-- FEATURES SECTION -->
+<div class="section">
+  <div class="section-label">What We Do</div>
+  <h2 class="section-title">Built Different.<br/>Designed to Last.</h2>
+
+  <div class="card-grid">
+    <div class="card">
+      <svg class="card-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="18,3 33,12 33,24 18,33 3,24 3,12" stroke="currentColor" stroke-width="1.5" fill="none"/>
+        <circle cx="18" cy="18" r="5" stroke="currentColor" stroke-width="1.5"/>
+      </svg>
+      <h3>Core Vision</h3>
+      <p>Everything here starts from first principles — no shortcuts, no noise. Just what matters, distilled.</p>
+    </div>
+    <div class="card">
+      <svg class="card-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="4" y="4" width="28" height="28" rx="1" stroke="currentColor" stroke-width="1.5"/>
+        <line x1="4" y1="13" x2="32" y2="13" stroke="currentColor" stroke-width="1.5"/>
+        <line x1="14" y1="4" x2="14" y2="32" stroke="currentColor" stroke-width="1.5" opacity="0.4"/>
+        <circle cx="23" cy="23" r="5" stroke="currentColor" stroke-width="1.5"/>
+      </svg>
+      <h3>Precision Craft</h3>
+      <p>Every detail is intentional. Every pixel placed with purpose. The craft is the product.</p>
+    </div>
+    <div class="card">
+      <svg class="card-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <line x1="18" y1="3" x2="18" y2="33" stroke="currentColor" stroke-width="1.5"/>
+        <line x1="3" y1="18" x2="33" y2="18" stroke="currentColor" stroke-width="1.5"/>
+        <circle cx="18" cy="18" r="8" stroke="currentColor" stroke-width="1.5"/>
+        <circle cx="18" cy="18" r="3" fill="currentColor"/>
+      </svg>
+      <h3>Always On</h3>
+      <p>Fast, reliable, and built on infrastructure that scales. Ready for whatever comes next.</p>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>&copy; 2026 Intristic.net — All rights reserved.</p>
+  <span>EST. MMXXVI</span>
+</footer>
+
+</body>
+</html>
