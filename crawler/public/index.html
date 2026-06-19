@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Web Crawler — Intristic</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #040810;
+      --surface: #080f1e;
+      --cyan: #00e5ff;
+      --blue: #0a6fff;
+      --dim: #1a2a40;
+      --text: #c8dff5;
+      --muted: #4a6480;
+      --glow: 0 0 30px rgba(0,229,255,0.25), 0 0 60px rgba(0,229,255,0.1);
+    }
+
+    html, body {
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Rajdhani', sans-serif;
+    }
+
+    /* Grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,229,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 60px 24px 80px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .logo {
+      font-family: 'Syncopate', sans-serif;
+      font-size: clamp(1.4rem, 4vw, 2.2rem);
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      color: var(--cyan);
+      text-shadow: var(--glow);
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-size: 1rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+    }
+
+    .search-box {
+      background: var(--surface);
+      border: 1px solid var(--dim);
+      border-radius: 12px;
+      padding: 28px 28px 24px;
+      margin-bottom: 36px;
+      box-shadow: 0 0 40px rgba(0,229,255,0.05);
+    }
+
+    .input-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--dim);
+      color: var(--text);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.1rem;
+      padding: 12px 18px;
+      border-radius: 8px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 0 2px rgba(0,229,255,0.12);
+    }
+
+    button.search-btn {
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+      border: none;
+      color: #040810;
+      font-family: 'Syncopate', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      padding: 13px 22px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+      white-space: nowrap;
+    }
+
+    button.search-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+    button.search-btn:active { transform: translateY(0); }
+    button.search-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+    .options-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-top: 14px;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .options-row label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    input[type="checkbox"] {
+      accent-color: var(--cyan);
+      width: 15px;
+      height: 15px;
+      cursor: pointer;
+    }
+
+    /* Status */
+    .status {
+      text-align: center;
+      font-size: 0.95rem;
+      color: var(--muted);
+      min-height: 24px;
+      margin-bottom: 20px;
+      letter-spacing: 0.05em;
+    }
+
+    .status.loading { color: var(--cyan); }
+    .status.error   { color: #ff4f6a; }
+
+    /* Progress bar */
+    .progress-bar {
+      height: 2px;
+      background: var(--dim);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 28px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .progress-bar.active { opacity: 1; }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--blue), var(--cyan));
+      width: 0%;
+      transition: width 0.4s ease;
+      border-radius: 2px;
+    }
+
+    /* Results header */
+    .results-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    .results-meta .count { color: var(--cyan); font-weight: 600; }
+
+    /* Filter chips */
+    .filter-chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      background: var(--dim);
+      border: 1px solid transparent;
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      color: var(--muted);
+      transition: all 0.2s;
+    }
+
+    .chip.active, .chip:hover {
+      border-color: var(--cyan);
+      color: var(--cyan);
+      background: rgba(0,229,255,0.07);
+    }
+
+    /* Result cards */
+    .results-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .result-card {
+      background: var(--surface);
+      border: 1px solid var(--dim);
+      border-radius: 10px;
+      padding: 18px 20px;
+      transition: border-color 0.2s, transform 0.15s;
+      animation: fadeIn 0.3s ease both;
+    }
+
+    .result-card:hover {
+      border-color: rgba(0,229,255,0.35);
+      transform: translateY(-2px);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-card:nth-child(1)  { animation-delay: 0.02s; }
+    .result-card:nth-child(2)  { animation-delay: 0.04s; }
+    .result-card:nth-child(3)  { animation-delay: 0.06s; }
+    .result-card:nth-child(4)  { animation-delay: 0.08s; }
+    .result-card:nth-child(5)  { animation-delay: 0.10s; }
+    .result-card:nth-child(6)  { animation-delay: 0.12s; }
+    .result-card:nth-child(7)  { animation-delay: 0.14s; }
+    .result-card:nth-child(8)  { animation-delay: 0.16s; }
+    .result-card:nth-child(n+9){ animation-delay: 0.18s; }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .favicon {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      flex-shrink: 0;
+      margin-top: 2px;
+      background: var(--dim);
+    }
+
+    .card-title-block { flex: 1; min-width: 0; }
+
+    .result-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--cyan);
+      text-decoration: none;
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: color 0.15s;
+    }
+
+    .result-title:hover { color: #fff; }
+
+    .result-url {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .result-snippet {
+      font-size: 0.92rem;
+      line-height: 1.55;
+      color: var(--text);
+      opacity: 0.85;
+    }
+
+    .card-footer {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .source-badge {
+      background: var(--dim);
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 0.72rem;
+      letter-spacing: 0.05em;
+    }
+
+    .open-link {
+      color: var(--blue);
+      text-decoration: none;
+      font-size: 0.82rem;
+      transition: color 0.15s;
+    }
+
+    .open-link:hover { color: var(--cyan); }
+
+    .empty {
+      text-align: center;
+      padding: 60px 0;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    @media (max-width: 520px) {
+      .input-row { flex-direction: column; }
+      button.search-btn { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <header>
+      <div class="logo">INTRISTIC // CRAWLER</div>
+      <div class="subtitle">Discover relevant sites on any topic, product, or service</div>
+    </header>
+
+    <div class="search-box">
+      <div class="input-row">
+        <input type="text" id="queryInput" placeholder="e.g. sustainable energy storage, CRM software, noise-cancelling headphones…" autocomplete="off" />
+        <button class="search-btn" id="searchBtn">SEARCH</button>
+      </div>
+      <div class="options-row">
+        <label>
+          <input type="checkbox" id="enrichCheck" />
+          Enrich with live page metadata (slower)
+        </label>
+      </div>
+    </div>
+
+    <div class="progress-bar" id="progressBar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="status" id="statusMsg"></div>
+
+    <div id="resultsMeta" class="results-meta" style="display:none">
+      <span>Found <span class="count" id="resultCount">0</span> unique sites</span>
+      <div class="filter-chips">
+        <span class="chip active" data-filter="all">All</span>
+        <span class="chip" data-filter="DuckDuckGo">DuckDuckGo</span>
+        <span class="chip" data-filter="Bing">Bing</span>
+      </div>
+    </div>
+
+    <div class="results-list" id="resultsList"></div>
+  </div>
+
+  <script>
+    const input     = document.getElementById('queryInput');
+    const btn       = document.getElementById('searchBtn');
+    const status    = document.getElementById('statusMsg');
+    const bar       = document.getElementById('progressBar');
+    const fill      = document.getElementById('progressFill');
+    const list      = document.getElementById('resultsList');
+    const meta      = document.getElementById('resultsMeta');
+    const countEl   = document.getElementById('resultCount');
+    const enrichChk = document.getElementById('enrichCheck');
+
+    let allResults = [];
+    let activeFilter = 'all';
+
+    // Filter chips
+    document.querySelectorAll('.chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        activeFilter = chip.dataset.filter;
+        renderResults();
+      });
+    });
+
+    function setProgress(pct) {
+      fill.style.width = pct + '%';
+    }
+
+    function setStatus(msg, cls = '') {
+      status.textContent = msg;
+      status.className = 'status ' + cls;
+    }
+
+    function getFavicon(url) {
+      try {
+        const host = new URL(url).origin;
+        return `https://www.google.com/s2/favicons?sz=32&domain_url=${encodeURIComponent(host)}`;
+      } catch { return ''; }
+    }
+
+    function renderResults() {
+      const filtered = activeFilter === 'all'
+        ? allResults
+        : allResults.filter(r => r.source === activeFilter);
+
+      list.innerHTML = '';
+      if (!filtered.length) {
+        list.innerHTML = '<div class="empty">No results for this filter.</div>';
+        return;
+      }
+
+      filtered.forEach((r, i) => {
+        const card = document.createElement('div');
+        card.className = 'result-card';
+        card.style.animationDelay = Math.min(i * 0.04, 0.3) + 's';
+
+        const faviconSrc = getFavicon(r.url);
+        card.innerHTML = `
+          <div class="card-top">
+            <img class="favicon" src="${faviconSrc}" alt="" onerror="this.style.display='none'" />
+            <div class="card-title-block">
+              <a class="result-title" href="${r.url}" target="_blank" rel="noopener" title="${r.title}">${r.title || r.url}</a>
+              <div class="result-url">${r.displayUrl || r.url}</div>
+            </div>
+          </div>
+          ${r.snippet ? `<div class="result-snippet">${r.snippet}</div>` : ''}
+          <div class="card-footer">
+            <span class="source-badge">${r.source}</span>
+            <a class="open-link" href="${r.url}" target="_blank" rel="noopener">Open site →</a>
+          </div>`;
+        list.appendChild(card);
+      });
+    }
+
+    async function runSearch() {
+      const query = input.value.trim();
+      if (!query) { input.focus(); return; }
+
+      btn.disabled = true;
+      list.innerHTML = '';
+      meta.style.display = 'none';
+      bar.classList.add('active');
+      setProgress(10);
+      setStatus('Crawling the web…', 'loading');
+
+      // Animate progress while waiting
+      let prog = 10;
+      const ticker = setInterval(() => {
+        prog = Math.min(prog + Math.random() * 8, 85);
+        setProgress(prog);
+      }, 600);
+
+      try {
+        const enrich = enrichChk.checked ? '&enrich=true' : '';
+        const res = await fetch(`/api/crawl?query=${encodeURIComponent(query)}${enrich}`);
+        const data = await res.json();
+
+        clearInterval(ticker);
+        setProgress(100);
+
+        if (!res.ok || data.error) throw new Error(data.error || 'Server error');
+
+        allResults = data.results;
+        countEl.textContent = allResults.length;
+        meta.style.display = 'flex';
+        activeFilter = 'all';
+        document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+        document.querySelector('.chip[data-filter="all"]').classList.add('active');
+
+        if (!allResults.length) {
+          setStatus('No results found. Try a different query.', '');
+        } else {
+          setStatus(`Found ${allResults.length} sites for "${query}"`, '');
+          renderResults();
+        }
+      } catch (err) {
+        clearInterval(ticker);
+        setProgress(0);
+        setStatus('Error: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        setTimeout(() => { bar.classList.remove('active'); setProgress(0); }, 600);
+      }
+    }
+
+    btn.addEventListener('click', runSearch);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') runSearch(); });
+  </script>
+</body>
+</html>
