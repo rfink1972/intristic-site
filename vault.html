@@ -155,7 +155,9 @@
       go.disabled = false; go.textContent = "Unlock";
     }
   });
-  tryRemembered();
+  // Run after the page has fully loaded so the vault replaces the lock screen cleanly.
+  if (document.readyState === "complete") tryRemembered();
+  else window.addEventListener("load", tryRemembered);
 </script>
 </body>
 </html>
