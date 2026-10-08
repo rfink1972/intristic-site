@@ -475,18 +475,18 @@
     </svg>
   </div>
 
-  <h1 class="headline">INTRI<span>STIC</span></h1>
-  <p class="tagline">Something <em>intrinsic</em> is coming &nbsp;·&nbsp; Built from the inside out</p>
+  <h1 class="headline" id="headline">INTRI<span>STIC</span></h1>
+  <p class="tagline" id="tagline">Something <em>intrinsic</em> is coming &nbsp;·&nbsp; Built from the inside out</p>
 
   <div class="cta-row">
-    <a href="#" class="btn btn-primary">Get Started</a>
-    <a href="#" class="btn btn-ghost">Learn More</a>
+    <a href="#" class="btn btn-primary" id="btn-primary">Get Started</a>
+    <a href="#" class="btn btn-ghost" id="btn-secondary">Learn More</a>
   </div>
 
 </section>
 
 <!-- STATS -->
-<div class="stats">
+<div class="stats" id="stats">
   <div class="stat">
     <span class="stat-value">01</span>
     <span class="stat-label">Domain Secured</span>
@@ -503,10 +503,10 @@
 
 <!-- FEATURES SECTION -->
 <div class="section">
-  <div class="section-label">What We Do</div>
-  <h2 class="section-title">Built Different.<br/>Designed to Last.</h2>
+  <div class="section-label" id="section-label">What We Do</div>
+  <h2 class="section-title" id="section-title">Built Different.<br/>Designed to Last.</h2>
 
-  <div class="card-grid">
+  <div class="card-grid" id="cards">
     <div class="card">
       <svg class="card-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
         <polygon points="18,3 33,12 33,24 18,33 3,24 3,12" stroke="currentColor" stroke-width="1.5" fill="none"/>
@@ -539,9 +539,81 @@
 </div>
 
 <footer>
-  <p>&copy; 2026 Intristic.net — All rights reserved.</p>
+  <p id="footer-text">&copy; 2026 Intristic.net — All rights reserved.</p>
   <span>EST. MMXXVI</span>
 </footer>
+
+<script>
+  /* Fills the page from content/home.json (edited in Pages CMS).
+     If the file can't load, the text already in this page stays as-is. */
+  (function () {
+    const ICONS = {
+      hexagon: '<polygon points="18,3 33,12 33,24 18,33 3,24 3,12" stroke="currentColor" stroke-width="1.5" fill="none"/><circle cx="18" cy="18" r="5" stroke="currentColor" stroke-width="1.5"/>',
+      grid: '<rect x="4" y="4" width="28" height="28" rx="1" stroke="currentColor" stroke-width="1.5"/><line x1="4" y1="13" x2="32" y2="13" stroke="currentColor" stroke-width="1.5"/><line x1="14" y1="4" x2="14" y2="32" stroke="currentColor" stroke-width="1.5" opacity="0.4"/><circle cx="23" cy="23" r="5" stroke="currentColor" stroke-width="1.5"/>',
+      target: '<line x1="18" y1="3" x2="18" y2="33" stroke="currentColor" stroke-width="1.5"/><line x1="3" y1="18" x2="33" y2="18" stroke="currentColor" stroke-width="1.5"/><circle cx="18" cy="18" r="8" stroke="currentColor" stroke-width="1.5"/><circle cx="18" cy="18" r="3" fill="currentColor"/>',
+      diamond: '<polygon points="18,3 33,18 18,33 3,18" stroke="currentColor" stroke-width="1.5" fill="none"/><polygon points="18,11 25,18 18,25 11,18" stroke="currentColor" stroke-width="1.5" fill="none"/>',
+      bolt: '<polygon points="20,3 8,20 17,20 15,33 28,15 19,15" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/>'
+    };
+    const $ = id => document.getElementById(id);
+    const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+    const has = v => typeof v === 'string' && v.trim() !== '';
+
+    // *word* in the tagline becomes the highlighted word
+    function setRich(node, text) {
+      node.textContent = '';
+      text.split(/(\*[^*]+\*)/).forEach(part => {
+        if (/^\*[^*]+\*$/.test(part)) node.appendChild(el('em', null, part.slice(1, -1)));
+        else if (part) node.appendChild(document.createTextNode(part));
+      });
+    }
+    function setLines(node, text) {
+      node.textContent = '';
+      text.split('\n').forEach((line, i) => { if (i) node.appendChild(el('br')); node.appendChild(document.createTextNode(line)); });
+    }
+    function setButton(node, label, link) {
+      if (!has(label)) { node.style.display = 'none'; return; }
+      node.textContent = label; node.href = has(link) ? link : '#'; node.style.display = '';
+    }
+
+    fetch('content/home.json', { cache: 'no-cache' })
+      .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(c => {
+        if (has(c.headline_main) || has(c.headline_accent)) {
+          const h = $('headline'); h.textContent = c.headline_main || '';
+          if (has(c.headline_accent)) h.appendChild(el('span', null, c.headline_accent));
+        }
+        if (has(c.tagline)) setRich($('tagline'), c.tagline.replace(/ · /g, '  ·  '));
+        if (c.buttons) {
+          setButton($('btn-primary'), c.buttons.primary_label, c.buttons.primary_link);
+          setButton($('btn-secondary'), c.buttons.secondary_label, c.buttons.secondary_link);
+        }
+        if (Array.isArray(c.stats)) {
+          const s = $('stats'); s.textContent = '';
+          c.stats.forEach(st => {
+            const d = el('div', 'stat');
+            d.append(el('span', 'stat-value', st.value || ''), el('span', 'stat-label', st.label || ''));
+            s.appendChild(d);
+          });
+          s.style.display = c.stats.length ? '' : 'none';
+        }
+        if (has(c.section_label)) $('section-label').textContent = c.section_label;
+        if (has(c.section_title)) setLines($('section-title'), c.section_title);
+        if (Array.isArray(c.cards)) {
+          const g = $('cards'); g.textContent = '';
+          c.cards.forEach(cd => {
+            const d = el('div', 'card');
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('class', 'card-icon'); svg.setAttribute('viewBox', '0 0 36 36'); svg.setAttribute('fill', 'none');
+            svg.innerHTML = ICONS[cd.icon] || ICONS.hexagon;
+            d.append(svg, el('h3', null, cd.title || ''), el('p', null, cd.text || ''));
+            g.appendChild(d);
+          });
+        }
+        if (has(c.footer_text)) $('footer-text').textContent = c.footer_text;
+      })
+      .catch(() => { /* keep built-in text */ });
+  })();
+</script>
 
 </body>
 </html>
